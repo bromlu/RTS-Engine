@@ -9,6 +9,7 @@
     </div>
   </div>
 </body>
+<script src="minPQ.js"></script>
 <script src="unit.js"></script>
 <script src="getMap.js"></script>
 <script src="flowfield.js"></script>
@@ -30,23 +31,16 @@ for (let i = 0; i < 8; i++) {
   let x = Math.floor(Math.random() * W)
   let y = Math.floor(Math.random() * W)
   player.units.push(new Unit(x, y))
-}  
-
-
-for (let i = 0; i < S; i++) {
-  map.push([])
-  for (let j = 0; j < S; j++) {
-    map[i].push(0);
-  }
 }
 
-map[4][3] = 1;
 
 function getColor(n){
   if (n == 0) return "black"
   if (n == 1) return "red"
   return 'white'
 }
+
+var f = generateFlowField(10,20);
 
 function draw() {
   
@@ -56,13 +50,32 @@ function draw() {
 
   for (let i = 0; i < S; i ++) {
     for (let j = 0; j < S; j ++) {
-      if (map[i][j] === 0) continue;
+      // if (map[i][j] === 0) continue;
       let color = getColor(map[i][j]);
       ctx.fillStyle = color;
       ctx.fillRect(j*B, i*B, B, B);
       ctx.strokeRect(j*B, i*B, B, B);
     }
   }
+
+  for (let i = 0; i < S; i ++) {
+    for (let j = 0; j < S; j ++) {
+      ctx.strokeStyle = "green";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let cx = j*B + B/2
+      let cy = i*B + B/2
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + 10*f[i][j].v.x, cy + 10*f[i][j].v.y);
+      ctx.stroke();
+      // ctx.beginPath();
+      // ctx.font = "14px sans-serif"
+      // ctx.fillStyle = "yellow"
+      // ctx.fillText(f[i][j].cost, cx, cy);
+    }
+  }
+
+  
 
   player.units.forEach(unit => unit.draw(ctx));
 }
@@ -107,11 +120,14 @@ canvas.oncontextmenu = function(e) {
   e.preventDefault();
   let x = Math.round(getCanvasPosition(e.offsetX));
   let y = Math.round(getCanvasPosition(e.offsetY));
-  for (let unit of player.units) {
-    if (unit.selected) {
-      unit.target = {x, y}
-    }
-  }
+  // for (let unit of player.units) {
+  //   if (unit.selected) {
+  //     unit.target = {x, y}
+  //   }
+  // }
+  let j = Math.floor(x / B);
+  let i = Math.floor(y / B);
+  f = generateFlowField(i, j)
 }
 
 
