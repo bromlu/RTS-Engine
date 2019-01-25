@@ -104,45 +104,7 @@ function Unit(x, y, r=8) {
 
     this.x += this.vx;
     this.y += this.vy;
-    // this.x = this.slideX(this.x, this.vx);
-    // this.y = this.slideY(this.y, this.vy);
   }
-
-  this.slideX = function(x, vx) {
-    let offset = Math.sign(vx) * this.r;
-    let currj = Math.floor((x+offset) / B);
-    let nextj = Math.floor((x+vx+offset) / B);
-    if (currj == nextj) return x + vx;
-
-    let topi = Math.floor((this.y-this.r) / B);
-    let boti = Math.floor((this.y+this.r) / B);
-    for (let i = topi; i <= boti; i++) {
-      if (getHeight(i, nextj) != 0) { //collide
-        if (vx > 0) return nextj * B - this.r - 1
-        return nextj * B + B - offset;
-      }
-    }
-    return x + vx;
-  }
-
-  this.slideY = function(y, vy) {
-    let offset = Math.sign(vy) * this.r;
-    let curri = Math.floor((y+offset) / B);
-    let nexti = Math.floor((y+vy+offset) / B);
-    if (curri == nexti) return y + vy;
-
-    let lftj = Math.floor((this.x-this.r) / B);
-    let rgtj = Math.floor((this.x+this.r) / B);
-    for (let j = lftj; j <= rgtj; j++) {
-      if (getHeight(nexti, j) != 0) { //collide
-        if (vy >= 0) return nexti * B - this.r - 1
-          
-        return nexti * B + B - offset;
-      }
-    }
-    return y + vy;
-  }
-
 }
 
 function closeTo(a, b) {
