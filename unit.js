@@ -9,7 +9,7 @@ function Unit(x, y, r=8) {
   this.target = {x: this.x, y: this.y};
   this.color = "blue";
   this.selected = false;
-  this.field = [];
+  this.field = getField(Math.floor(this.y/B), Math.floor(this.x/B));
 
   this.getLocation = function() {
     return {x: this.x, y: this.y};
@@ -54,9 +54,21 @@ function Unit(x, y, r=8) {
   }
 
   this.update = function() {
-    if (closeToPts(this.getLocation(), this.target)) {
-      this.vx = 0;
-      this.vy = 0;
+    if (withinGridSpace(this.getLocation(), this.target)) {
+      if (closeToPts(this.getLocation(), this.target)) {
+        this.vx = 0;
+        this.vy = 0;
+        return
+      }
+      let dx = this.target.x - this.x;
+      let dy = this.target.y - this.y;
+      let hyp = Math.sqrt(dx*dx + dy*dy);
+      dx /= hyp;
+      dy /= hyp;
+      this.vx = dx * this.maxv;
+      this.vy = dy * this.maxv;
+      this.x += this.vx;
+      this.y += this.vy;
       return
     }
 
@@ -141,3 +153,12 @@ function closeToPts(pt1, pt2) {
   return closeTo(pt1.x, pt2.x) && closeTo(pt1.y, pt2.y);
 }
 
+function withinGridSpace(pt1, pt2) {
+  let i1 = Math.floor(pt1.y/ B);
+  let i2 = Math.floor(pt2.y/ B);
+  if (i1 != i2) return false;
+  let j1 = Math.floor(pt1.x/ B);
+  let j2 = Math.floor(pt2.x/ B);
+  if (j1 != j2) return false;
+  return true;
+}
