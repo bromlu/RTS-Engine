@@ -17,8 +17,29 @@
 var body = document.getElementById('body');
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d')
-
+var keys = {};
 var done = false;
+
+var selectionBox = {
+  pt1: {
+    x: 0,
+    y: 0,
+  },
+  pt2: {
+    x: 0,
+    y: 0,
+  },
+  active: false,
+  contains(x,y) {
+    let dx1 = this.pt1.x - x;
+    let dx2 = this.pt2.x - x;
+    let dy1 = this.pt1.y - y;
+    let dy2 = this.pt2.y - y;
+    if (dx1 * dx2 > 0) return false
+    if (dy1 * dy2 > 0) return false
+    return true;
+  }
+};
 
 const W = 540
 const B = 18;
@@ -76,6 +97,22 @@ function draw() {
   
 
   player.units.forEach(unit => unit.draw(ctx));
+  drawSelectionBox(ctx);
+
+}
+
+function drawSelectionBox(ctx) {
+  if (!selectionBox.active) return;
+  let w = selectionBox.pt2.x - selectionBox.pt1.x;
+  let h = selectionBox.pt2.y - selectionBox.pt1.y;
+  let temp = ctx.globalAlpha;
+  ctx.globalAlpha = .3;
+  ctx.fillStyle = "green";
+  ctx.fillRect(selectionBox.pt1.x, selectionBox.pt1.y, w, h)
+  ctx.globalAlpha = temp;
+  ctx.strokeStyle = "lime"
+  ctx.strokeRect(selectionBox.pt1.x, selectionBox.pt1.y, w, h)
+
 }
 
 function update() {
@@ -99,21 +136,66 @@ function getUnit(player, x, y) {
   return null;
 }
 
-canvas.onclick = function(e) {
-  e.preventDefault();
-  let x = Math.round(getCanvasPosition(e.offsetX));
-  let y = Math.round(getCanvasPosition(e.offsetY));
-  let unit = getUnit(player, x, y);
-  if (unit !== null) {
-    unit.selected = !unit.selected;
-    return;
-  } else {
-    player.units.forEach(unit => unit.selected = false)
-  }
+// canvas.onclick = function(e) {
+//   e.preventDefault();
+//   let x = Math.round(getCanvasPosition(e.offsetX));
+//   let y = Math.round(getCanvasPosition(e.offsetY));
+//   let unit = getUnit(player, x, y);
+//   if (unit !== null) {
+//     unit.selected = !unit.selected;
+//     return;
+//   } else {
+//     player.units.forEach(unit => unit.selected = false)
+//   }
 
-  // let j = Math.floor(x / B);
-  // let i = Math.floor(y / B);
-  // map[i][j] = 1;
+//   // let j = Math.floor(x / B);
+//   // let i = Math.floor(y / B);
+//   // map[i][j] = 1;
+// }
+
+canvas.onmousedown = function(e) {
+  keys[e.button] = true;
+  if (e.button == 0) {
+    let x = Math.round(getCanvasPosition(e.offsetX));
+    let y = Math.round(getCanvasPosition(e.offsetY));
+    selectionBox.pt1 = {x, y};
+  }
+}
+
+canvas.onmousemove = function(e) {
+  if (keys[0]) {
+    selectionBox.active = true;
+    let x = Math.round(getCanvasPosition(e.offsetX));
+    let y = Math.round(getCanvasPosition(e.offsetY));
+    selectionBox.pt2 = {x, y};
+  }
+}
+canvas.onmouseup = function(e) {
+  keys[e.button] = false;
+  if (e.button == 0) {
+    let x = Math.round(getCanvasPosition(e.offsetX));
+    let y = Math.round(getCanvasPosition(e.offsetY));
+    if (selectionBox.active) {
+      selectionBox.pt2 = {x, y};
+      selectionBox.active = false;
+      for (let unit of player.units) {
+        if (selectionBox.contains(unit.x, unit.y)) {
+          unit.selected = true
+        } else {
+          unit.selected = keys[16] && unit.selected;
+        }
+      }
+    } else {
+      let unit = getUnit(player, x, y);
+      if (!keys[16]) {
+        player.units.forEach(unit => unit.selected = false)
+      }
+      if (unit !== null) {
+        unit.selected = true;
+        return;
+      }
+    }
+  }
 }
 
 canvas.oncontextmenu = function(e) {
@@ -130,7 +212,6 @@ canvas.oncontextmenu = function(e) {
   }
 }
 
-
 function getCanvasPosition(clientPos) {
   let ratio = canvas.width / canvas.clientWidth;
   return Math.round(clientPos * ratio);
@@ -140,5 +221,13 @@ function getCanvasPosition(clientPos) {
 window.onresize = function(e) {
   canvas.width = W;
   canvas.height = W;
+}
+
+window.onkeydown = function (e) {
+  keys[e.keyCode] = true;
+}
+
+window.onkeyup = function (e) {
+  keys[e.keyCode] = false;
 }
 </script>
