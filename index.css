@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+}
+
+.outer {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.square {
+  flex: 1 0 calc(25% - 10px);
+  margin: 5px;
+  background: #E9D2FF;
+  display: flex;
+  max-width: 720px;
+}
+
+.square:after {
+  content: '';
+  display: block;
+  padding-bottom: 100%;
+}
+
+.fill {
+  flex: 1;
+}

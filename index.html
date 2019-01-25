@@ -1,0 +1,128 @@
+<head>
+  <title>RTS Engine Supreme Extravaganza</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+<body>
+  <div class="outer">
+    <div class="square">
+      <canvas id="canvas" class="fill"></canvas>
+    </div>
+  </div>
+</body>
+<script src="unit.js"></script>
+<script src="getMap.js"></script>
+<script src="flowfield.js"></script>
+<script>
+var body = document.getElementById('body');
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d')
+
+const W = 540
+const B = 18;
+const S = W/B; //30
+canvas.width = W;
+canvas.height = W;
+
+var player = {
+  units: []
+}
+for (let i = 0; i < 8; i++) {
+  let x = Math.floor(Math.random() * W)
+  let y = Math.floor(Math.random() * W)
+  player.units.push(new Unit(x, y))
+}  
+
+
+for (let i = 0; i < S; i++) {
+  map.push([])
+  for (let j = 0; j < S; j++) {
+    map[i].push(0);
+  }
+}
+
+map[4][3] = 1;
+
+function getColor(n){
+  if (n == 0) return "black"
+  if (n == 1) return "red"
+  return 'white'
+}
+
+function draw() {
+  
+  ctx.fillStyle = "#333";
+  ctx.fillRect(0, 0, W, W);
+  ctx.strokeStyle = "#555";
+
+  for (let i = 0; i < S; i ++) {
+    for (let j = 0; j < S; j ++) {
+      if (map[i][j] === 0) continue;
+      let color = getColor(map[i][j]);
+      ctx.fillStyle = color;
+      ctx.fillRect(j*B, i*B, B, B);
+      ctx.strokeRect(j*B, i*B, B, B);
+    }
+  }
+
+  player.units.forEach(unit => unit.draw(ctx));
+}
+
+function update() {
+  player.units.forEach(unit => unit.update());
+}
+
+function tick(t) {
+  draw();
+  update();
+  requestAnimationFrame(tick);
+}
+
+requestAnimationFrame(tick);
+
+function getUnit(player, x, y) {
+  for (let unit of player.units) {
+    if (unit.contains(x, y)){
+      return unit;
+    }
+  }
+  return null;
+}
+
+canvas.onclick = function(e) {
+  e.preventDefault();
+  let x = Math.round(getCanvasPosition(e.offsetX));
+  let y = Math.round(getCanvasPosition(e.offsetY));
+  let unit = getUnit(player, x, y);
+  if (unit !== null) {
+    unit.selected = !unit.selected;
+    return;
+  }
+
+  let j = Math.floor(x / B);
+  let i = Math.floor(y / B);
+  map[i][j] = 1;
+}
+
+canvas.oncontextmenu = function(e) {
+  e.preventDefault();
+  let x = Math.round(getCanvasPosition(e.offsetX));
+  let y = Math.round(getCanvasPosition(e.offsetY));
+  for (let unit of player.units) {
+    if (unit.selected) {
+      unit.target = {x, y}
+    }
+  }
+}
+
+
+function getCanvasPosition(clientPos) {
+  let ratio = canvas.width / canvas.clientWidth;
+  return Math.round(clientPos * ratio);
+}
+
+
+window.onresize = function(e) {
+  canvas.width = W;
+  canvas.height = W;
+}
+</script>
