@@ -1,4 +1,15 @@
 map = map ? map : [[]];
+
+// fields = []
+// let startgenfield = Date.now();
+// for (let i = 0; i < map.length; i ++) {
+//   fields.push([])
+//   for (let j = 0; j < map[0].length; j ++) {
+//     fields[i].push(generateFlowField(i,j));
+//   }
+// }
+// console.log('took:', Date.now()-startgenfield)
+
 function PFNode(i, j, fromNode) {
   this.i = i;
   this.j = j;
@@ -7,11 +18,16 @@ function PFNode(i, j, fromNode) {
   this.v = {x:0, y:0};
   
   if (fromNode) {
-    this.v = {
-      x: fromNode.j - this.j,
-      y: fromNode.i - this.i
-    };
+    if (map[i][j] == 0) {
+      this.v = {
+        x: fromNode.j - this.j,
+        y: fromNode.i - this.i
+      };
+    } else {
+      this.v = {x: 0, y: 0};
+    }
     this.cost = computeTravelCost(fromNode.i, fromNode.j, this.i, this.j);
+    this.cost += fromNode.cost;
   }
 
   this.compareTo = function(that) {
@@ -60,10 +76,6 @@ function getAngle(i0, j0, i1, j1) {
   return angle;
 }
 
-function getHeight(i, j) { 
-  return map[i][j]; 
-}
-
 function computeDistance(i0, j0, i1, j1) {
   return Math.sqrt((i0 - i1) * (i0 - i1) + (j0 - j1) * (j0 - j1));
 }
@@ -77,29 +89,34 @@ function computeTravelCost(i0, j0, i1, j1) {
 }
 
 function generateFlowField(i, j) {
-  let field = []; //mauybe add count if you get stuck?
+  let field = [];
   for (let j = 0; j < map.length; j++) {
     field.push([])
     for (let i = 0; i < map[0].length; i++) {
       field[j].push(null);
     }
-  }
-  
-  mpq = new PriorityQueue((a,b) => a.cost < b.cost);
+  }  
+  mpq = new MinPQ();
   let root = new PFNode(i, j, null);
-  mpq.push(root);
-  
+  mpq.enqueue(root);
   while (!mpq.isEmpty()) {
-    let current = mpq.pop();
+    let current = mpq.dequeue();
+    if (field[current.i][current.j] != null) continue
+    field[current.i][current.j] = current;
     let ns = current.neighbors();
     for (let n of ns) {
-      if (field[n.i][n.j] !== null) continue;
-      field[n.i][n.j] = n;
-      mpq.push(n);
+      if (field[n.i][n.j] == null){
+        mpq.enqueue(n);
+      } 
     }
   }
 
   return field;
+}
+
+function getField(i, j) {
+  //TODO use lookup table
+  return generateFlowField(i, j);
 }
 
 /*

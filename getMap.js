@@ -40,3 +40,7 @@ function mapContains(i, j) {
   if (j < 0) return false;
   return true;
 }
+
+function getHeight(i, j) { 
+  return map[i][j]; 
+}
