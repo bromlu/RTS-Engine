@@ -1,6 +1,6 @@
 # RTS-Engine
 
-A fun RTS-Engine written in Javascript. The foundation of this was written by [bromlu](https://bromlu.github.com). 
+A fun RTS-Engine written in Javascript. The foundation of this was written by [bromlu](https://github.com/bromlu). 
 
 ## Run
 
